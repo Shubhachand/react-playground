@@ -9,19 +9,35 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/standalone": "^7.28.2",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.12.0",
+    "bcrypt": "^6.0.0",
+    "file-saver": "^2.0.5",
+    "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "next": "15.4.4",
+    "prismjs": "^1.30.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.4.4"
+    "react-simple-code-editor": "^0.14.1",
+    "react-syntax-highlighter": "^15.6.1",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/file-saver": "^2.0.7",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.4.4",
-    "@eslint/eslintrc": "^3"
+    "prisma": "^6.12.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

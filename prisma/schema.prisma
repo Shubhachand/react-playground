@@ -1,0 +1,49 @@
+// This is your Prisma schema file. It's the blueprint for your database.
+
+// 1. Define the database connection.
+// We're telling Prisma we are using MongoDB and the connection URL is in a secret file.
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// 2. Define the code generator.
+// This tells Prisma to generate a type-safe client for us to use in our code.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 3. Define the User model.
+// This will become the "User" collection in MongoDB.
+model User {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String 
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // This defines the relationship: One User can have many Sessions.
+  sessions  Session[]
+}
+
+// 4. Define the Session model.
+// This will become the "Session" collection for storing each user's project.
+model Session {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @default("Untitled Session")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // We use the `Json` type to store structured data like a list of chat messages.
+  chatHistory Json?
+  jsxCode     String?
+  cssCode     String?
+
+  // This defines the other side of the relationship: A Session belongs to one User.
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+
+  // This makes looking up a user's sessions faster.
+  @@index([userId])
+}
