@@ -10,7 +10,7 @@ export default async function MainLayout({
   children: React.ReactNode;
 }) {
   // 1. Get the token from cookies on the server.
-  const token = getAuthToken();
+  const token =  getAuthToken();
   if (!token) {
     // If no token, redirect to login immediately.
     redirect('/login');

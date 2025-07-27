@@ -11,14 +11,14 @@ interface UserPayload {
 
 // This function gets the authentication token from the browser's cookies.
 // It's designed to be used in Server Components.
-export function getAuthToken() {
+export  function getAuthToken() {
   const cookieStore = cookies();
   const token = cookieStore.get('token')?.value;
   return token;
 }
 
 // This function decodes the JWT and returns the user payload, or null if invalid.
-export function getUserFromToken(token: string): UserPayload | null {
+export function  getUserFromToken(token: string): UserPayload | null {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
     return payload;

@@ -3,51 +3,50 @@ import { GoogleGenerativeAI, Part } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-const generationPrompt = `
+const basePrompt = `
 You are an expert React and Tailwind CSS developer.
-A user will provide a prompt, and optionally an image, to create or modify a React component.
-You must return a single, valid JSON object containing two keys: "jsx" and "css".
+You must return a single, valid JSON object and nothing else.
+The JSON object must contain two keys: "jsx" and "css".
 
-- The "jsx" key must contain the string of the React component code.
-- The "css" key must contain any additional CSS needed, which can be empty.
-- The component must be self-contained in a single function with a default export.
-- All styling must be done using Tailwind CSS classes. Do not use style objects or regular CSS unless absolutely necessary.
-- If an image is provided, analyze it and generate a component that visually matches the design in the image.
-- Do not include any explanation, preamble, or any text outside of the JSON object.
+**CRITICAL RULES:**
+1.  The "jsx" value must be a string containing a complete, self-contained React component.
+2.  The component MUST start with 'export default function...'
+3.  The JSX code inside the return statement MUST be well-formed. It must have a single root element.
+4.  All styling must be done using Tailwind CSS classes inside the \`className\` attribute.
+5.  Do not include any explanation, preamble, or any text outside of the JSON object.
 
-Example user prompt: "create a simple hello world button"
-Example AI response:
-{
-  "jsx": "export default function HelloWorldButton() {\\n  return (\\n    <button className=\\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\\">\\n      Hello World\\n    </button>\\n  );\\n}",
-  "css": ""
-}
+**COMMON MISTAKES TO AVOID:**
+- DO NOT output incomplete code snippets.
+- DO NOT have syntax errors like missing closing tags.
+- DO NOT forget the 'export default function...' part.
+
+---
 `;
 
-export async function generateComponent(prompt: string, imageBase64: string | null = null) {
-  const modelName = imageBase64 ? 'gemini-pro-vision' : 'gemini-1.5-flash-latest';
-  const model = genAI.getGenerativeModel({ model: modelName });
+const textGenerationPrompt = `${basePrompt}\nA user will provide a prompt to create or modify a React component.`;
 
-  const promptParts: Part[] = [
-    { text: generationPrompt },
-    { text: `User prompt: "${prompt || 'Analyze the provided image.'}"` },
-  ];
+const imageGenerationPrompt = `${basePrompt}\nAnalyze the provided image and generate a React component that visually matches its design.`;
+
+export async function generateComponent(prompt: string, imageBase64: string | null = null) {
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+
+  const promptParts: Part[] = [];
 
   if (imageBase64) {
-    // FIX: Make image processing more robust by dynamically extracting the mime type.
+    promptParts.push({ text: imageGenerationPrompt });
+    if (prompt) {
+        promptParts.push({ text: `Additional user instructions: "${prompt}"` });
+    }
     const match = imageBase64.match(/^data:(image\/\w+);base64,(.*)$/);
     if (!match) {
         throw new Error('Invalid image data format. Expected a data URL.');
     }
     const mimeType = match[1];
     const data = match[2];
-
-    const imagePart = {
-      inlineData: {
-        mimeType,
-        data,
-      },
-    };
-    promptParts.push(imagePart);
+    promptParts.push({ inlineData: { mimeType, data } });
+  } else {
+    promptParts.push({ text: textGenerationPrompt });
+    promptParts.push({ text: `User prompt: "${prompt}"` });
   }
 
   try {
@@ -61,7 +60,6 @@ export async function generateComponent(prompt: string, imageBase64: string | nu
     return jsonResponse as { jsx: string; css: string };
   } catch (error: any) {
     console.error('AI_GENERATION_ERROR:', error);
-    // Re-throw the error so the API route can catch it and send a specific message.
     throw new Error(error.message || 'Failed to generate component from AI.');
   }
 }

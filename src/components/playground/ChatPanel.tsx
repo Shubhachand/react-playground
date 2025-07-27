@@ -10,22 +10,18 @@ export default function ChatPanel() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // Create a ref to access the hidden file input element.
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Function to auto-scroll to the latest message.
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [chatHistory]);
 
-  // A single function to handle sending the prompt (with or without an image) to the API.
   const sendPromptToApi = async (promptText: string, imageBase64: string | null = null) => {
     if (isLoading) return;
     setIsLoading(true);
     
-    // Add the user's message to the chat history.
     const userMessage: ChatMessage = { role: 'user', content: promptText || "Analyze this image and create a component." };
     addMessage(userMessage);
     setPrompt('');
@@ -34,52 +30,54 @@ export default function ChatPanel() {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // The request body now includes an optional 'image' property.
         body: JSON.stringify({ prompt: promptText, image: imageBase64 }),
       });
 
-      const { jsx, css } = await res.json();
-      if (res.ok) {
-        const assistantMessage: ChatMessage = { role: 'assistant', content: 'Here is the component you requested.' };
-        addMessage(assistantMessage);
-        updateCode(jsx, css);
-      } else {
-        throw new Error('Failed to generate component');
+      if (!res.ok) {
+        let errorMessage = `Request failed with status: ${res.status}`;
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = await res.text();
+        }
+        throw new Error(errorMessage);
       }
-    } catch (error) {
+
+      const data = await res.json();
+      const assistantMessage: ChatMessage = { role: 'assistant', content: 'Here is the component you requested.' };
+      addMessage(assistantMessage);
+      updateCode(data.jsx, data.css);
+
+    } catch (error: any) {
       console.error('Chat submission error:', error);
-      const assistantMessage: ChatMessage = { role: 'assistant', content: 'Sorry, an error occurred. Please try again.' };
+      const assistantMessage: ChatMessage = { role: 'assistant', content: `Sorry, an error occurred: ${error.message}` };
       addMessage(assistantMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handles the submission from the text input form.
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
     sendPromptToApi(prompt);
   };
 
-  // Triggers the hidden file input when the image icon is clicked.
   const handleImageButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Handles the file selection from the hidden input.
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        // Send the image (and any text in the prompt box) to the API.
         sendPromptToApi(prompt, base64String);
       };
       reader.readAsDataURL(file);
     }
-    // Reset the input value to allow selecting the same file again.
     e.target.value = '';
   };
 
@@ -103,7 +101,6 @@ export default function ChatPanel() {
       <form onSubmit={handleTextSubmit} className="p-4 border-t flex items-center space-x-2">
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/webp" />
         
-        {/* New Image Upload Button */}
         <button type="button" onClick={handleImageButtonClick} className="p-2 rounded-full hover:bg-gray-200 text-gray-500" disabled={isLoading} title="Upload Image">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l-1.586-1.586a2 2 0 01-2.828 0L6 14m6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </button>
@@ -116,7 +113,6 @@ export default function ChatPanel() {
           disabled={isLoading}
         />
         
-        {/* Smaller Send Button */}
         <Button type="submit" isLoading={isLoading} className="w-auto px-4 py-2 text-sm">
           Send
         </Button>

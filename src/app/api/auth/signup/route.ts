@@ -2,14 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/db';
+import jwt from 'jsonwebtoken'; // <-- Import the JWT library
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    // Destructure name along with email and password
     const { name, email, password } = body;
 
-    // Validate that name, email, and password were provided
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: 'Name, email, and password are required' },
@@ -30,7 +29,6 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Include the name when creating the new user
     const user = await prisma.user.create({
       data: {
         name,
@@ -39,8 +37,22 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // --- NEW: Auto-login the user after signup ---
+    // 1. Create a payload for the token.
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    // 2. Sign the token with your secret key.
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: '1d',
+    });
+
+    // 3. Return the token along with the success message.
     return NextResponse.json(
-      { message: 'User created successfully', userId: user.id },
+      { message: 'User created successfully', token }, // <-- Send token in response
       { status: 201 }
     );
 

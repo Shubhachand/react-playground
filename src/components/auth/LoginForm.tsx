@@ -48,7 +48,7 @@ export default function LoginForm() {
 
   return (
     <Card>
-      <CardHeader>Welcome Back</CardHeader>
+      <div className="text-gray-700" ><CardHeader>Welcome Back</CardHeader></div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>

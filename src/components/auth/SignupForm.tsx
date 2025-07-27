@@ -1,11 +1,13 @@
 // src/components/auth/SignupForm.tsx
-'use client'; // This directive marks this as a Client Component.
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import Link from 'next/link';
+import Cookies from 'js-cookie'; // Import the cookie library
 
 export default function SignupForm() {
   const router = useRouter();
@@ -27,12 +29,14 @@ export default function SignupForm() {
         body: JSON.stringify({ name, email, password }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        // If signup is successful, redirect to the login page.
-        router.push('/login');
+        // If signup is successful, save the token and redirect to the dashboard.
+        Cookies.set('token', data.token, { expires: 1 });
+        router.push('/'); // Redirect to the dashboard
+        router.refresh(); // Refresh to ensure server components re-render
       } else {
-        // If the API returns an error, display it.
-        const data = await res.json();
         setError(data.message || 'Something went wrong.');
       }
     } catch (err) {
@@ -44,26 +48,55 @@ export default function SignupForm() {
   };
 
   return (
-    <Card>
-     <div className='text-gray-700'> <CardHeader  >Create an Account</CardHeader></div>
+    <Card className="backdrop-blur-lg bg-white/60 border border-gray-200 shadow-xl p-6 rounded-xl text-gray-800">
+      <CardHeader className="text-2xl font-bold mb-4 text-center text-black">
+        Create an Account
+      </CardHeader>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-          <Input type="text"   value={name} onChange={(e) => setName(e.target.value)} required />
+          <label className="block text-sm mb-1 text-gray-700">Name</label>
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="bg-white border border-gray-300 text-gray-800 placeholder-gray-400"
+          />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label className="block text-sm mb-1 text-gray-700">Email</label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="bg-white border border-gray-300 text-gray-800 placeholder-gray-400"
+          />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <label className="block text-sm mb-1 text-gray-700">Password</label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="bg-white border border-gray-300 text-gray-800 placeholder-gray-400"
+          />
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <Button type="submit" isLoading={isLoading}>
+
+        <Button type="submit" isLoading={isLoading} className="w-full">
           {isLoading ? 'Signing Up...' : 'Sign Up'}
         </Button>
       </form>
+
+      <p className="text-center text-sm text-gray-600 mt-6">
+        Already have an account?{' '}
+        <Link href="/login" className="font-medium text-blue-600 hover:underline">
+          Log in
+        </Link>
+      </p>
     </Card>
   );
 }

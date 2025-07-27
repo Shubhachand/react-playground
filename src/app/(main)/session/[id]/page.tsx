@@ -6,7 +6,7 @@ import Playground from '@/components/playground/Playground';
 
 // FIX: The page component must be async to access dynamic params.
 export default async function SessionPage({ params }: { params: { id: string } }) {
-  const token = getAuthToken();
+  const token =  getAuthToken();
   if (!token) redirect('/login');
 
   const user = getUserFromToken(token);
