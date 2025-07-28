@@ -21,7 +21,7 @@ export function useAutoSave() {
     const saveTimeout = setTimeout(() => {
       if (!session) return;
 
-      console.log('Auto-saving session...');
+      // console.log('Auto-saving session...');
 
       fetch(`/api/sessions/${session.id}`, {
         method: 'PUT',
@@ -35,9 +35,9 @@ export function useAutoSave() {
       })
       .then(res => {
         if (res.ok) {
-          console.log('Session saved successfully.');
+          // console.log('Session saved successfully.');
         } else {
-        console.error('Failed to save session. Status:', res.status);
+          console.error('Failed to save session. Status:', res.status);
 
         }
       })

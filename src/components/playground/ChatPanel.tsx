@@ -3,13 +3,12 @@
 
 import { usePlaygroundStore, ChatMessage } from '@/store/use-playground-store';
 import { useState, useEffect, useRef } from 'react';
-// import { Button } from '../ui/Button';
-
 export default function ChatPanel() {
   const { chatHistory, addMessage, updateCode } = usePlaygroundStore();
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
@@ -116,8 +115,6 @@ export default function ChatPanel() {
     onChange={handleFileChange}
     className="hidden"
     accept="image/png, image/jpeg, image/webp"
-    title="Upload an image"
-    placeholder="Choose an image file"
   />
   <button
     type="button"
