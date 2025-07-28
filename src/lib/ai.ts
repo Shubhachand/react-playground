@@ -58,8 +58,12 @@ export async function generateComponent(prompt: string, imageBase64: string | nu
     const jsonResponse = JSON.parse(cleanedText);
 
     return jsonResponse as { jsx: string; css: string };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('AI_GENERATION_ERROR:', error);
-    throw new Error(error.message || 'Failed to generate component from AI.');
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Failed to generate component from AI.');
+    } else {
+      throw new Error('Failed to generate component from AI.');
+    }
   }
 }

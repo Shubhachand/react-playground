@@ -3,7 +3,7 @@
 
 import { usePlaygroundStore, ChatMessage } from '@/store/use-playground-store';
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../ui/Button';
+// import { Button } from '../ui/Button';
 
 export default function ChatPanel() {
   const { chatHistory, addMessage, updateCode } = usePlaygroundStore();
@@ -38,6 +38,7 @@ export default function ChatPanel() {
         try {
           const errorData = await res.json();
           errorMessage = errorData.message || errorMessage;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           errorMessage = await res.text();
         }
@@ -49,9 +50,15 @@ export default function ChatPanel() {
       addMessage(assistantMessage);
       updateCode(data.jsx, data.css);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Chat submission error:', error);
-      const assistantMessage: ChatMessage = { role: 'assistant', content: `Sorry, an error occurred: ${error.message}` };
+      let errorMessage = 'An unknown error occurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      const assistantMessage: ChatMessage = { role: 'assistant', content: `Sorry, an error occurred: ${errorMessage}` };
       addMessage(assistantMessage);
     } finally {
       setIsLoading(false);
@@ -109,6 +116,8 @@ export default function ChatPanel() {
     onChange={handleFileChange}
     className="hidden"
     accept="image/png, image/jpeg, image/webp"
+    title="Upload an image"
+    placeholder="Choose an image file"
   />
   <button
     type="button"

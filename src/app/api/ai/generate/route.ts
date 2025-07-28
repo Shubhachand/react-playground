@@ -2,12 +2,11 @@
 import { generateComponent } from '@/lib/ai';
 import { NextRequest, NextResponse } from 'next/server';
 
-// FIX: Increase the maximum body size limit for this specific API route.
-// This is necessary to handle the large data from image uploads.
+
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '4mb', // Set a new limit (e.g., 4MB)
+      sizeLimit: '4mb', 
     },
   },
 };
@@ -23,10 +22,14 @@ export async function POST(req: NextRequest) {
     const componentData = await generateComponent(prompt, image);
 
     return NextResponse.json(componentData, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API_GENERATE_ERROR', error);
+    const message =
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message?: string }).message
+        : 'Failed to generate component';
     return NextResponse.json(
-      { message: error.message || 'Failed to generate component' },
+      { message },
       { status: 500 }
     );
   }

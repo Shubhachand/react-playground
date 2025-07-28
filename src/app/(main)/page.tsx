@@ -1,20 +1,20 @@
 // src/app/(main)/page.tsx
-import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import prisma from '@/lib/db';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import NewSessionButton from '@/components/dashboard/NewSessionButton';
+import { getAuthToken, getUserFromToken } from "@/lib/auth";
+import prisma from "@/lib/db";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import NewSessionButton from "@/components/dashboard/NewSessionButton";
 
 export default async function DashboardPage() {
   const token = getAuthToken();
-  if (!token) redirect('/login');
+  if (!token) redirect("/login");
 
   const user = getUserFromToken(token);
-  if (!user) redirect('/login');
+  if (!user) redirect("/login");
 
   const sessions = await prisma.session.findMany({
     where: { userId: user.userId },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { updatedAt: "desc" },
   });
 
   return (
@@ -28,9 +28,15 @@ export default async function DashboardPage() {
         {sessions.length > 0 ? (
           <ul className="space-y-4">
             {sessions.map((session) => (
-              <li key={session.id} className="border-b pb-4 flex justify-between items-center">
+              <li
+                key={session.id}
+                className="border-b pb-4 flex justify-between items-center"
+              >
                 <div>
-                  <Link href={`/session/${session.id}`} className="text-lg font-semibold text-blue-700 hover:underline">
+                  <Link
+                    href={`/session/${session.id}`}
+                    className="text-lg font-semibold text-blue-700 hover:underline"
+                  >
                     {session.name}
                   </Link>
                   <p className="text-sm text-gray-500">
@@ -42,7 +48,8 @@ export default async function DashboardPage() {
           </ul>
         ) : (
           <p className="text-center text-gray-500">
-            You don't have any sessions yet. Click "New Session" to get started!
+            You don&apos;t have any sessions yet. Click &quot;New Session&quot;
+            to get started!
           </p>
         )}
       </div>

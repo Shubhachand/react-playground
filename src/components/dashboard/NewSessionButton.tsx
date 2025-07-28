@@ -1,4 +1,3 @@
-// src/components/dashboard/NewSessionButton.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -13,23 +12,27 @@ export default function NewSessionButton() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/sessions', { method: 'POST' });
+
       if (res.ok) {
         const newSession = await res.json();
-        // Redirect to the new session's page
         router.push(`/session/${newSession.id}`);
+        // Don't reset loading — let the new page load
       } else {
-        // Handle error
         console.error('Failed to create a new session');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error creating session:', error);
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Button onClick={handleCreateSession} isLoading={isLoading} className="w-auto">
+    <Button
+      onClick={handleCreateSession}
+      disabled={isLoading}
+      className={`w-auto ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+    >
       {isLoading ? 'Creating...' : '+ New Session'}
     </Button>
   );
