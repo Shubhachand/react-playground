@@ -1,48 +1,67 @@
-// src/app/(main)/session/[id]/page.tsx
-
+// src/app/api/sessions/[id]/route.ts
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { redirect } from 'next/navigation';
-import Playground from '@/components/playground/Playground';
+import { NextRequest, NextResponse } from 'next/server';
 
-// This is the definitive, simplified structure to fix the build error.
-// We define the props directly and avoid any complex or external types.
-export default async function SessionPage({ params }: { params: { id: string } }) {
-  // --- Authentication and User Fetching ---
+/**
+ * Handles PUT requests to /api/sessions/:id.
+ * This function is for updating an existing session with new data from the auto-save feature.
+ */
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  // 1. Authenticate the user from their token.
   const token = getAuthToken();
   if (!token) {
-    // If the user is not logged in, redirect them to the login page.
-    return redirect('/login');
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const user = getUserFromToken(token);
   if (!user) {
-    // If the token is invalid or expired, also redirect to login.
-    return redirect('/login');
+    return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
   }
 
-  // --- Session Data Fetching ---
-  // We fetch the specific session from the database using the ID from the URL.
-  const session = await prisma.session.findUnique({
-    where: {
-      id: params.id,
-      // CRITICAL Security Check: We also ensure the session belongs to the currently logged-in user.
-      // This prevents one user from accessing another user's session by guessing the URL.
-      userId: user.userId,
-    },
-  });
+  try {
+    // 2. Get the new session data from the request body.
+    const body = await req.json();
+    const { name, chatHistory, jsxCode, cssCode } = body;
+    const sessionId = params.id;
 
-  // If no session is found (or it doesn't belong to the user), redirect to the main dashboard.
-  if (!session) {
-    return redirect('/');
+    // 3. Security Check: Verify that the session being updated belongs to the logged-in user.
+    const session = await prisma.session.findFirst({
+      where: {
+        id: sessionId,
+        userId: user.userId,
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { message: 'Session not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // 4. Update the session in the database.
+    const updatedSession = await prisma.session.update({
+      where: {
+        id: sessionId,
+      },
+      data: {
+        name,
+        chatHistory,
+        jsxCode,
+        cssCode,
+      },
+    });
+
+    return NextResponse.json(updatedSession, { status: 200 });
+  } catch (error) {
+    console.error('UPDATE_SESSION_ERROR', error);
+    return NextResponse.json(
+      { message: 'Failed to update session' },
+      { status: 500 }
+    );
   }
-
-  // --- Render the Page ---
-  // If everything is successful, render the Playground component and pass the session data to it.
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">{session.name}</h1>
-      <Playground session={session} />
-    </div>
-  );
 }
