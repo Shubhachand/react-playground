@@ -1,17 +1,16 @@
-// src/app/(main)/session/[id]/page.tsx
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Playground from '@/components/playground/Playground';
-import type { Session } from '@prisma/client'; // Optional: for stricter typing
+import type { Session } from '@prisma/client';
 
-interface SessionPageProps {
+type PageProps = {
   params: {
     id: string;
   };
-}
+};
 
-export default async function SessionPage({ params }: SessionPageProps) {
+export default async function Page({ params }: PageProps) {
   const token = getAuthToken();
   if (!token) return redirect('/login');
 
