@@ -1,16 +1,23 @@
-import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import prisma from '@/lib/db';
+// src/app/(main)/session/[id]/page.tsx
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import prisma from '@/lib/db';
+import { verifyJwtToken } from '@/lib/auth'; // renamed for clarity
 import Playground from '@/components/playground/Playground';
 import type { Session } from '@prisma/client';
 
 export default async function SessionPage({ params }: { params: { id: string } }) {
-  const token = getAuthToken();
-  if (!token) return redirect('/login');
+  // 1. Get token from cookies (server-side)
+  const cookieStore = cookies();
+  const token = cookieStore.get('token')?.value;
 
-  const user = getUserFromToken(token);
-  if (!user) return redirect('/login');
+  if (!token) redirect('/login');
 
+  // 2. Verify token (safely)
+  const user = verifyJwtToken(token);
+  if (!user || !user.userId) redirect('/login');
+
+  // 3. Fetch session from DB
   const session: Session | null = await prisma.session.findUnique({
     where: {
       id: params.id,
@@ -18,11 +25,12 @@ export default async function SessionPage({ params }: { params: { id: string } }
     },
   });
 
-  if (!session) return redirect('/');
+  if (!session) redirect('/');
 
+  // 4. Render page
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">{session.name}</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">{session.name}</h1>
       <Playground session={session} />
     </div>
   );
