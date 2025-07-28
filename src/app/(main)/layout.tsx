@@ -2,34 +2,23 @@
 import Header from '@/components/layout/Header';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import type { ReactNode } from 'react';
 
-// FIX: The layout component must be async to use dynamic server functions like cookies().
-export default async function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // 1. Get the token from cookies on the server.
-  const token =  getAuthToken();
-  if (!token) {
-    // If no token, redirect to login immediately.
-    redirect('/login');
-  }
+interface MainLayoutProps {
+  children: ReactNode;
+}
 
-  // 2. Validate the token and get user data.
+export default async function MainLayout({ children }: MainLayoutProps) {
+  const token = getAuthToken();
+  if (!token) return redirect('/login');
+
   const user = getUserFromToken(token);
-  if (!user) {
-    // If token is invalid, redirect to login.
-    redirect('/login');
-  }
+  if (!user) return redirect('/login');
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Pass the user's name to the Header component */}
       <Header userName={user.name} />
-      <main className="container mx-auto p-6">
-        {children}
-      </main>
+      <main className="container mx-auto p-6">{children}</main>
     </div>
   );
 }

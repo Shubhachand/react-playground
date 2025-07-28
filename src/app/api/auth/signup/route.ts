@@ -2,12 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/db';
-import jwt from 'jsonwebtoken'; // <-- Import the JWT library
+import jwt from 'jsonwebtoken';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password } = body;
+    const { name, email, password }: { name: string; email: string; password: string } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email },
     });
 
     if (existingUser) {
@@ -37,25 +37,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // --- NEW: Auto-login the user after signup ---
-    // 1. Create a payload for the token.
-    const payload = {
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-    };
-
-    // 2. Sign the token with your secret key.
-    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: '1d',
-    });
-
-    // 3. Return the token along with the success message.
-    return NextResponse.json(
-      { message: 'User created successfully', token }, // <-- Send token in response
-      { status: 201 }
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '1d' }
     );
 
+    return NextResponse.json(
+      { message: 'User created successfully', token },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('SIGNUP_ERROR', error);
     return NextResponse.json(

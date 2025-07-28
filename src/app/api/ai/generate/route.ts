@@ -15,18 +15,24 @@ export async function POST(req: NextRequest) {
     const { prompt, image }: { prompt?: string; image?: string } = await req.json();
 
     if (!prompt && !image) {
-      return NextResponse.json({ message: 'Prompt or image is required' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Prompt or image is required' },
+        { status: 400 }
+      );
     }
 
-    const componentData = await generateComponent(prompt || '', image || null);
+    const componentData = await generateComponent(prompt ?? '', image ?? null);
 
     return NextResponse.json(componentData, { status: 200 });
   } catch (error: unknown) {
     console.error('API_GENERATE_ERROR', error);
 
     const message =
-      typeof error === 'object' && error !== null && 'message' in error
-        ? (error as { message?: string }).message || 'Unknown error occurred'
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string'
+        ? (error as { message: string }).message
         : 'Failed to generate component';
 
     return NextResponse.json({ message }, { status: 500 });

@@ -1,6 +1,6 @@
 // src/store/use-playground-store.ts
 import { create } from 'zustand';
-import { Session } from '@prisma/client'; // Import the Session type from Prisma
+import { Session } from '@prisma/client';
 
 // Define the shape of a single chat message
 export interface ChatMessage {
@@ -20,27 +20,26 @@ interface PlaygroundState {
 }
 
 export const usePlaygroundStore = create<PlaygroundState>((set) => ({
-  // Initial empty state
   session: null,
   chatHistory: [],
   jsxCode: '',
   cssCode: '',
 
-  // Action to initialize the store with data from the database
-  setInitialState: (session) => {
+  // Initialize the store with data from the database
+  setInitialState: (session) =>
     set({
       session,
-      // Prisma stores Json as a generic type, so we need to assert its structure
       chatHistory: (session.chatHistory as ChatMessage[]) || [],
       jsxCode: session.jsxCode || '',
       cssCode: session.cssCode || '',
-    });
-  },
+    }),
 
-  // Action to add a new message to the chat history
+  // Add a message to the chat history
   addMessage: (message) =>
-    set((state) => ({ chatHistory: [...state.chatHistory, message] })),
+    set((state) => ({
+      chatHistory: [...state.chatHistory, message],
+    })),
 
-  // Action to update the generated code
+  // Update the JSX and CSS code
   updateCode: (jsx, css) => set({ jsxCode: jsx, cssCode: css }),
 }));

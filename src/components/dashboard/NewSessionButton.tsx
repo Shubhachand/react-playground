@@ -16,7 +16,7 @@ export default function NewSessionButton() {
       if (res.ok) {
         const newSession = await res.json();
         router.push(`/session/${newSession.id}`);
-        // Don't reset loading — let the new page load
+        // Let the new page load naturally
       } else {
         console.error('Failed to create a new session');
         setIsLoading(false);

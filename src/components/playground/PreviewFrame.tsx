@@ -5,14 +5,11 @@ import { usePlaygroundStore } from '@/store/use-playground-store';
 import { useEffect, useState } from 'react';
 import * as Babel from '@babel/standalone';
 
-// This component no longer needs initial props, as it gets everything live from the store.
 export default function PreviewFrame() {
   const [iframeContent, setIframeContent] = useState('');
-  
-  // Get the latest code directly from the central Zustand store.
+
   const { jsxCode, cssCode } = usePlaygroundStore();
 
-  // This effect will now run automatically whenever jsxCode or cssCode changes in the store.
   useEffect(() => {
     const generateIframeHtml = (jsx: string, css: string) => {
       if (!jsx.trim()) {
@@ -23,7 +20,7 @@ export default function PreviewFrame() {
         const transformedJsx = Babel.transform(jsx, {
           presets: [['react', { runtime: 'classic' }]],
         }).code;
-        
+
         return `
           <html>
             <head>
@@ -62,7 +59,7 @@ export default function PreviewFrame() {
             </body>
           </html>`;
       } catch (e: unknown) {
-        console.error("--- BABEL BUILD FAILED ---", e);
+        console.error('--- BABEL BUILD FAILED ---', e);
         const message = e instanceof Error ? e.message : String(e);
         return `<html><body><div style="color: red; padding: 1rem;"><h4>Build Error</h4><pre>${message}</pre></div></body></html>`;
       }
@@ -70,13 +67,11 @@ export default function PreviewFrame() {
 
     const html = generateIframeHtml(jsxCode, cssCode);
     setIframeContent(html);
-  }, [jsxCode, cssCode]); // The effect now depends directly on the code from the store.
+  }, [jsxCode, cssCode]);
 
   return (
-    // The "Run" button has been removed for a cleaner, live experience.
     <div className="flex-grow p-4 bg-white h-full">
       <iframe
-        // Use the content as a key to ensure the iframe re-mounts on every code change.
         key={iframeContent}
         title="Component Preview"
         className="w-full h-full border border-gray-300 rounded-md"

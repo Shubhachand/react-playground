@@ -1,13 +1,13 @@
-// src/components/auth/SignupForm.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import Link from 'next/link';
+
 import { Card, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import Link from 'next/link';
-import Cookies from 'js-cookie'; // Import the cookie library
 
 export default function SignupForm() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -32,10 +32,9 @@ export default function SignupForm() {
       const data = await res.json();
 
       if (res.ok) {
-        // If signup is successful, save the token and redirect to the dashboard.
         Cookies.set('token', data.token, { expires: 1 });
-        router.push('/'); // Redirect to the dashboard
-        router.refresh(); // Refresh to ensure server components re-render
+        router.push('/');
+        router.refresh();
       } else {
         setError(data.message || 'Something went wrong.');
       }

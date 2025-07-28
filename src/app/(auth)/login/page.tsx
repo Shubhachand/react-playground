@@ -5,7 +5,6 @@ import LoginForm from '@/components/auth/LoginForm';
 export default function LoginPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white overflow-hidden">
-
       {/* Background image (optional) */}
       <div className="absolute inset-0 bg-[url('/image.jpg')] bg-cover bg-center opacity-10 z-0" />
 
