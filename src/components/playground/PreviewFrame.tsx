@@ -61,9 +61,10 @@ export default function PreviewFrame() {
               </script>
             </body>
           </html>`;
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("--- BABEL BUILD FAILED ---", e);
-        return `<html><body><div style="color: red; padding: 1rem;"><h4>Build Error</h4><pre>${e.message}</pre></div></body></html>`;
+        const message = e instanceof Error ? e.message : String(e);
+        return `<html><body><div style="color: red; padding: 1rem;"><h4>Build Error</h4><pre>${message}</pre></div></body></html>`;
       }
     };
 
