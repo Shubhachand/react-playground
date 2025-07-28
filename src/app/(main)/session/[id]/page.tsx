@@ -4,13 +4,7 @@ import { redirect } from 'next/navigation';
 import Playground from '@/components/playground/Playground';
 import type { Session } from '@prisma/client';
 
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
-
-export default async function Page({ params }: PageProps) {
+export default async function SessionPage({ params }: { params: { id: string } }) {
   const token = getAuthToken();
   if (!token) return redirect('/login');
 
