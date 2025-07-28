@@ -1,31 +1,35 @@
+// src/app/(main)/session/[id]/page.tsx
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Playground from '@/components/playground/Playground';
-import type { Session } from '@prisma/client';
 
-// ✅ Correctly typed for App Router dynamic route
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
-
-export default async function SessionPage({ params }: PageProps) {
+// By removing the custom 'PageProps' type and defining the props inline,
+// we avoid conflicts with Next.js's internal type generation.
+export default async function SessionPage({ params }: { params: { id: string } }) {
   const token = getAuthToken();
-  if (!token) return redirect('/login');
+  if (!token) {
+    return redirect('/login');
+  }
 
   const user = getUserFromToken(token);
-  if (!user) return redirect('/login');
+  if (!user) {
+    return redirect('/login');
+  }
 
-  const session: Session | null = await prisma.session.findUnique({
+  // TypeScript can correctly infer the type of 'session' from the Prisma client.
+  const session = await prisma.session.findUnique({
     where: {
       id: params.id,
+      // Security check: ensure the session belongs to the logged-in user.
       userId: user.userId,
     },
   });
 
-  if (!session) return redirect('/');
+  // If the session doesn't exist or doesn't belong to the user, redirect to the dashboard.
+  if (!session) {
+    return redirect('/');
+  }
 
   return (
     <div>
