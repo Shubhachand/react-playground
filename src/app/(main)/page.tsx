@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Your Sessions</h2>
+        <h2 className="text-3xl font-bold text-gray-700">Your Sessions</h2>
         {/* Use the new client component for the button */}
         <NewSessionButton />
       </div>
