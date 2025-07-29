@@ -7,10 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * Handles PUT requests to /api/sessions/:id.
  * This function is for updating an existing session with new data from the auto-save feature.
  */
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // 1. Authenticate the user from their token.
   const token = getAuthToken();
   if (!token) {
