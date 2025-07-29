@@ -1,15 +1,25 @@
 // src/components/ui/Card.tsx
 import React from 'react';
+import clsx from 'clsx'; // optional but helpful for class merging
 
-// A simple reusable card component for consistent styling of containers.
-export function Card({ children }: { children: React.ReactNode }) {
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function Card({ children, className }: CardProps) {
   return (
-    <div className="bg-white shadow-md rounded-lg p-8">
+    <div className={clsx("bg-white shadow-md rounded-lg p-8", className)}>
       {children}
     </div>
   );
 }
 
-export function CardHeader({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-2xl font-bold text-center mb-6">{children}</h2>;
+interface CardHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardHeader({ children, className }: CardHeaderProps) {
+  return <h2 className={clsx("text-2xl font-bold text-center mb-6", className)}>{children}</h2>;
 }
