@@ -29,7 +29,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set) => ({
   setInitialState: (session) =>
     set({
       session,
-      chatHistory: (session.chatHistory as ChatMessage[]) || [],
+      chatHistory: (session.chatHistory as unknown as ChatMessage[]) || [],
       jsxCode: session.jsxCode || '',
       cssCode: session.cssCode || '',
     }),
